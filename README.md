@@ -118,8 +118,8 @@ flowchart TD
 1. **Clone the Repository:**
 
 ```bash
-git clone https://github.com/YourUsername/epub2obsidian.git
-   cd epub2obsidian
+git clone https://github.com/johnkirson/ePUB-to-Obsidian.git
+cd ePUB-to-Obsidian
 ```
 
 1. **Install Dependencies:**
