@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ePUB → Obsidian</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="app__header">
+      <h1>ePUB → Obsidian</h1>
+      <p class="app__subtitle">Перетащите книги — получите готовые заметки для Obsidian</p>
+    </header>
+
+    <div id="pandoc-banner" class="banner banner--hidden">
+      <strong>Pandoc не найден.</strong>
+      Установите его, иначе конвертация не сработает:
+      <code>winget install --id JohnMacFarlane.Pandoc -e</code>
+    </div>
+
+    <section id="dropzone" class="dropzone" tabindex="0">
+      <input id="file-input" type="file" accept=".epub,.pdf" multiple hidden />
+      <div class="dropzone__icon">📚</div>
+      <div class="dropzone__text">Перетащите <b>.epub</b> сюда</div>
+      <div class="dropzone__hint">или нажмите, чтобы выбрать файлы</div>
+    </section>
+
+    <ul id="file-list" class="file-list"></ul>
+
+    <section class="options">
+      <label class="field">
+        <span class="field__label">Папка вывода</span>
+        <div class="field__row">
+          <input id="output-dir" type="text" class="field__input"
+                 placeholder="например, путь к вашему хранилищу Obsidian" />
+          <button id="browse-btn" type="button" class="btn btn--ghost">Обзор…</button>
+        </div>
+      </label>
+
+      <label class="field field--narrow">
+        <span class="field__label">Резать по заголовку</span>
+        <select id="heading-level" class="field__input">
+          <option value="auto" selected>Авто (рекомендуется)</option>
+          <option value="1">H1 — #</option>
+          <option value="2">H2 — ##</option>
+          <option value="3">H3 — ###</option>
+        </select>
+      </label>
+
+      <label class="field" id="title-field" style="display: none;">
+        <span class="field__label">Название книги (для метаданных)</span>
+        <input id="book-title" type="text" class="field__input"
+               placeholder="по умолчанию — имя файла" />
+      </label>
+    </section>
+
+    <button id="convert-btn" class="btn btn--primary btn--big" disabled>
+      Конвертировать
+    </button>
+
+    <section id="results" class="results"></section>
+
+    <details class="log-wrap" id="log-wrap" hidden>
+      <summary>Журнал</summary>
+      <pre id="log" class="log"></pre>
+    </details>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
