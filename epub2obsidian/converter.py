@@ -15,14 +15,24 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 
-# Default template locations, resolved relative to the repository root so the
-# package works no matter the current working directory.
-_PKG_DIR = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_PKG_DIR)
-DEFAULT_METADATA = os.path.join(_REPO_ROOT, "templates", "metadata.yml")
-DEFAULT_RESOURCES = os.path.join(_REPO_ROOT, "templates", "resources.md")
+
+def resource_dir():
+    """Base dir for bundled data (templates/, webui/).
+
+    When packaged with PyInstaller the data lives under ``sys._MEIPASS``;
+    otherwise it's the repository root next to this package.
+    """
+    if getattr(sys, "frozen", False):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+_RESOURCE_DIR = resource_dir()
+DEFAULT_METADATA = os.path.join(_RESOURCE_DIR, "templates", "metadata.yml")
+DEFAULT_RESOURCES = os.path.join(_RESOURCE_DIR, "templates", "resources.md")
 
 # Characters that are illegal in Windows filenames (spaces are kept on purpose).
 _ILLEGAL_FILENAME_CHARS = re.compile(r'[\\/*?:"<>|]')

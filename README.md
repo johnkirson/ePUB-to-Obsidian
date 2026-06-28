@@ -13,27 +13,23 @@ The notes are named according to the heading text (with illegal filename charact
 
 No command line needed. Just drag your books in.
 
-1. **Install [Pandoc](https://pandoc.org/installing.html)** (required engine):
+1. **Install [Pandoc](https://pandoc.org/installing.html)** (the required conversion engine):
 
    ```powershell
    winget install --id JohnMacFarlane.Pandoc -e
    ```
 
-2. **Install the Python dependency** (one time):
+2. **Get the app — two ways:**
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+   - **Standalone .exe (easiest, Windows):** download `ePUB-to-Obsidian.exe` from the
+     [Releases](https://github.com/johnkirson/ePUB-to-Obsidian/releases) page and double-click it.
+     No Python needed. (To build it yourself: `pip install pyinstaller` then run `build-exe.bat`.)
+   - **From source:** `pip install -r requirements.txt`, then double-click `run.bat`
+     or run `python launch.py`.
 
-3. **Launch the app** — double-click `run.bat` (Windows) or run:
-
-   ```bash
-   python launch.py
-   ```
-
-   A browser tab opens automatically. **Drag one or more `.epub` files** onto the
+3. **Convert.** A browser tab opens automatically. **Drag one or more `.epub` files** onto the
    drop zone, choose an output folder (e.g. your Obsidian vault — use **Browse…**),
-   pick the heading level to split on, and click **Convert**. Each book is written to
+   leave the heading level on **Auto**, and click **Convert**. Each book is written to
    its own subfolder, with images in `attachments/`. Use **Open folder** to jump
    straight to the result.
 

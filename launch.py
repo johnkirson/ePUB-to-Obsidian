@@ -8,6 +8,30 @@ import sys
 import threading
 import webbrowser
 
+
+def _run_folder_picker():
+    """Show a native folder dialog and print the chosen path. Used by the
+    packaged exe (invoked as ``app.exe --pick-folder``) so Tkinter runs in its
+    own process and can't crash the server. The import here also makes
+    PyInstaller bundle Tkinter."""
+    import tkinter as tk
+    from tkinter import filedialog
+
+    root = tk.Tk()
+    root.withdraw()
+    root.attributes("-topmost", True)
+    try:
+        path = filedialog.askdirectory(title="Choose output folder")
+    finally:
+        root.destroy()
+    print(path or "")
+
+
+# Handle the folder-picker sub-invocation before importing/starting Flask.
+if "--pick-folder" in sys.argv:
+    _run_folder_picker()
+    sys.exit(0)
+
 # Windows consoles default to a legacy codepage; force UTF-8 for status output.
 try:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")

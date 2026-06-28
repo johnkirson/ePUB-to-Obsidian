@@ -17,12 +17,18 @@ from .converter import (
     DEFAULT_RESOURCES,
     check_pandoc,
     convert_book,
+    resource_dir,
 )
 
-_PKG_DIR = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.dirname(_PKG_DIR)
-_WEBUI_DIR = os.path.join(_REPO_ROOT, "webui")
-_DEFAULT_OUTPUT = os.path.join(_REPO_ROOT, "output")
+# Bundled assets (templates/, webui/) live under the resource dir, which is the
+# PyInstaller temp dir when frozen. The default *output* folder, however, must
+# be somewhere persistent: next to the .exe when frozen, else the repo root.
+_WEBUI_DIR = os.path.join(resource_dir(), "webui")
+if getattr(sys, "frozen", False):
+    _APP_DIR = os.path.dirname(sys.executable)
+else:
+    _APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DEFAULT_OUTPUT = os.path.join(_APP_DIR, "output")
 
 app = Flask(__name__, static_folder=None)
 
@@ -156,8 +162,15 @@ _PICKER_SCRIPT = (
 def _pick_folder_subprocess():
     import subprocess
 
+    if getattr(sys, "frozen", False):
+        # Re-invoke our own packaged exe with a flag that just shows the dialog
+        # (running `exe -c <script>` would relaunch the whole app instead).
+        cmd = [sys.executable, "--pick-folder"]
+    else:
+        cmd = [sys.executable, "-c", _PICKER_SCRIPT]
+
     result = subprocess.run(
-        [sys.executable, "-c", _PICKER_SCRIPT],
+        cmd,
         capture_output=True,
         text=True,
         timeout=600,
