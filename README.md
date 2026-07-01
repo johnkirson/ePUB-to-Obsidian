@@ -27,8 +27,8 @@ No command line needed. Just drag your books in.
    - **From source:** `pip install -r requirements.txt`, then double-click `run.bat`
      or run `python launch.py`.
 
-3. **Convert.** A browser tab opens automatically. **Drag one or more `.epub` files** onto the
-   drop zone, choose an output folder (e.g. your Obsidian vault — use **Browse…**),
+3. **Convert.** A browser tab opens automatically. **Drag one or more `.epub` or `.fb2` files**
+   onto the drop zone, choose an output folder (e.g. your Obsidian vault — use **Browse…**),
    leave the heading level on **Auto**, and click **Convert**. Each book is written to
    its own subfolder, with images in `attachments/`. Use **Open folder** to jump
    straight to the result.
@@ -39,7 +39,7 @@ The command-line interface below still works for scripting and power users.
 
 ## Features
 
-- **Pandoc Conversion**: Uses Pandoc to convert ePUB (or PDF) files to Markdown, extracting images and other media.
+- **Pandoc Conversion**: Uses Pandoc to convert ePUB and FB2 files to Markdown, extracting images and other media.
 - **Markdown Splitting**: Splits the Markdown file into individual notes based on a configurable heading level (e.g., H1 or H2).
 - **Metadata Injection**: Prepends YAML front matter (from a template) to every note.
 - **Resource Linking**: Appends a Resources section to each note, automatically inserting a link to the next note (using the placeholder `<NEXT_NOTE_LINK>`).

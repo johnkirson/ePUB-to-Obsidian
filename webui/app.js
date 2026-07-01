@@ -29,7 +29,7 @@ function keyOf(f) {
 
 function addFiles(files) {
   for (const f of files) {
-    if (!/\.(epub|pdf)$/i.test(f.name)) continue;
+    if (!/\.(epub|fb2)$/i.test(f.name)) continue;
     if (selected.some((s) => keyOf(s) === keyOf(f))) continue;
     selected.push(f);
   }
