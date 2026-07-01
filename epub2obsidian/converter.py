@@ -124,24 +124,85 @@ def _write_single_note(md_path, outdir_path, title, log=print):
     return [note_path]
 
 
+_XML_ENC_RE = re.compile(rb'encoding=["\']([\w-]+)["\']', re.IGNORECASE)
+
+
+def ensure_utf8_source(src_path, log=print):
+    """Return a UTF-8 path for a text-based book (FB2), transcoding if needed.
+
+    Pandoc assumes UTF-8 and silently falls back to latin1 on other encodings,
+    which mangles Russian windows-1251 FB2 files. We detect the real encoding
+    (BOM, then the XML declaration, then a cp1251 fallback) and rewrite a UTF-8
+    copy. Binary containers like ePUB (ZIP) are left untouched.
+
+    Returns ``(path, tmp_created_or_None)``. Caller must delete the temp file.
+    """
+    with open(src_path, "rb") as f:
+        raw = f.read()
+
+    # ePUB and other ZIP-based formats start with "PK" — never decode those.
+    if raw[:2] == b"PK":
+        return src_path, None
+    # Already UTF-8 (with or without BOM)? Leave it alone.
+    if raw[:3] == b"\xef\xbb\xbf":
+        return src_path, None
+    try:
+        raw.decode("utf-8")
+        return src_path, None
+    except UnicodeDecodeError:
+        pass
+
+    # Not UTF-8: figure out the declared encoding, defaulting to cp1251.
+    m = _XML_ENC_RE.search(raw[:200])
+    enc = (m.group(1).decode("latin1").lower() if m else "cp1251")
+    if enc in ("windows-1251", "win-1251", "cp-1251"):
+        enc = "cp1251"
+    try:
+        text = raw.decode(enc)
+    except (LookupError, UnicodeDecodeError):
+        enc = "cp1251"
+        text = raw.decode("cp1251", errors="replace")
+
+    # Rewrite the XML declaration so it no longer claims a non-UTF-8 charset.
+    text = re.sub(
+        r'(<\?xml[^>]*?encoding=["\'])[\w-]+(["\'])',
+        r"\g<1>utf-8\g<2>",
+        text,
+        count=1,
+        flags=re.IGNORECASE,
+    )
+
+    fd, tmp_path = tempfile.mkstemp(suffix=".fb2")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(text)
+    log(f"[Step 1] Re-encoded source from {enc} to UTF-8.")
+    return tmp_path, tmp_path
+
+
 def convert_to_markdown(epub_path, attachments_dir, outfile_path, log=print):
-    """Step 1: Pandoc-convert an ePUB/PDF into a single Markdown file."""
+    """Step 1: Pandoc-convert an ePUB/FB2 into a single Markdown file."""
     os.makedirs(attachments_dir, exist_ok=True)
     exe = pandoc_exe() or "pandoc"
-    pandoc_command = [
-        exe,
-        "-t", "gfm-raw_html",
-        "--wrap=none",
-        f"--extract-media={attachments_dir}",
-        "-s", epub_path,
-        "-o", outfile_path,
-    ]
-    log(f"[Step 1] Converting to Markdown: {os.path.basename(epub_path)}")
-    result = subprocess.run(pandoc_command, capture_output=True, text=True, check=False)
-    if result.returncode != 0:
-        raise RuntimeError(
-            f"Pandoc failed (exit {result.returncode}): {result.stderr.strip()}"
-        )
+
+    source_path, tmp_source = ensure_utf8_source(epub_path, log=log)
+    try:
+        pandoc_command = [
+            exe,
+            "-t", "gfm-raw_html",
+            "--wrap=none",
+            f"--extract-media={attachments_dir}",
+            "-s", source_path,
+            "-o", outfile_path,
+        ]
+        log(f"[Step 1] Converting to Markdown: {os.path.basename(epub_path)}")
+        result = subprocess.run(pandoc_command, capture_output=True, text=True, check=False)
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"Pandoc failed (exit {result.returncode}): {result.stderr.strip()}"
+            )
+    finally:
+        if tmp_source and os.path.exists(tmp_source):
+            os.remove(tmp_source)
     log("[+] Step 1 done.")
 
 
